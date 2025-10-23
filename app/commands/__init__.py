@@ -24,10 +24,10 @@ class CommandHandler:
         command = self.commands.get(operation)
         if command is not None:
             return command.execute()
-        error_message = f"No such command: {operation}"  # Update the message
+        error_message = f"No such command: {operation}"  
         logging.error(error_message)
-        return error_message  # Return the updated friendly message
-
+        return error_message  
+    
 class App:
     """Main application class to manage command execution and logging."""
     def __init__(self):

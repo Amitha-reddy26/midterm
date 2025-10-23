@@ -1,7 +1,6 @@
 from app.commands import Command
 
 class AddCommand(Command):
-    """Class to represent a addition command."""
     def __init__(self, a, b):
         self.a = a
         self.b = b

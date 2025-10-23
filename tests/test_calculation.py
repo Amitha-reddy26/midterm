@@ -14,7 +14,6 @@ from calculator.operations import add, subtract, multiply, divide
     (Decimal('20'), Decimal('0.4'), divide, Decimal('50')),
 ])
 def test_calculation_operations(a_value, b_value, operation, expected_output):
-    """ Test various arithmetic operations using the Calculation class. """
     calc = Calculation(a_value, b_value, operation)
     result = calc.perform()
     assert result == expected_output, (
@@ -23,14 +22,11 @@ def test_calculation_operations(a_value, b_value, operation, expected_output):
     )
 
 def test_calculation_repr():
-    """ Test the string representation of a Calculation instance. """
     calc = Calculation(Decimal('10'), Decimal('5'), add)
     expected_repr = "Calculation(10, 5, add)"
     assert repr(calc) == expected_repr, f"Expected {expected_repr}, but got {repr(calc)}"
 
 def test_divide_by_zero():
-    """ Test division by zero handling. """
     calc = Calculation(Decimal('10'), Decimal('0'), divide)
     with pytest.raises(ValueError, match="Cannot divide by zero"):
         calc.perform()
-
