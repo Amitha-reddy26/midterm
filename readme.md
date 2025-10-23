@@ -52,7 +52,7 @@ To set up the project locally, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/HariniV02/Midterm-Project.git
+   git clone https://github.com/Amitha-reddy26/midterm.git
    cd Midterm-Project
    ```
 
