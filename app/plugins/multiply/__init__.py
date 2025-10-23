@@ -9,3 +9,4 @@ class MultiplyCommand(Command):
         result = self.a * self.b
         print(f"MultiplyCommand: {self.a} * {self.b} = {result}")
         return result
+
