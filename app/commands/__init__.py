@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 
 class Command(ABC):
     @abstractmethod
-    def execute(self, a, b):
+    def execute(self, a=None, b=None):
         pass
 
 
@@ -22,15 +22,34 @@ class CommandHandler:
 
     def execute_command(self, operation):
         command = self.commands.get(operation)
+
         if not command:
             error_message = f"No such command: {operation}"
             logging.error(error_message)
             return error_message
 
+        # ✅ Commands that do NOT require number inputs
+        non_math_commands = ["undo", "redo", "menu", "history", "clear", "delete", "exit"]
+
+        if operation in non_math_commands:
+            return command.execute()
+
+        # ✅ Math commands require numbers
         try:
             a = float(input("Enter first number: "))
             b = float(input("Enter second number: "))
-            return command.execute(a, b)
+
+            result = command.execute(a, b)
+
+            # ✅ Save results to history for Undo/Redo support
+            from calculator.calculation_history import CalculationHistory
+            history = CalculationHistory()
+            history.add_entry(operation, (a, b), result)
+
+            return result
+
+        except ValueError:
+            return "Invalid number input ❌"
         except Exception as e:
             logging.error(f"Execution error: {e}")
             return f"Error executing command: {e}"
@@ -68,7 +87,7 @@ class App:
         for _, plugin_name, is_pkg in pkgutil.iter_modules([plugins_path]):
             if is_pkg:
                 try:
-                    plugin_module = importlib.import_module(f'{plugins_package}.{plugin_name}')
+                    plugin_module = importlib.import_module(f"{plugins_package}.{plugin_name}")
                     self.register_plugin_commands(plugin_module, plugin_name)
                 except ImportError as e:
                     logging.error(f"Error importing plugin {plugin_name}: {e}")
@@ -76,6 +95,7 @@ class App:
     def register_plugin_commands(self, plugin_module, plugin_name):
         for item_name in dir(plugin_module):
             item = getattr(plugin_module, item_name)
+
             if isinstance(item, type) and issubclass(item, Command) and item is not Command:
                 self.command_handler.register_command(plugin_name, item())
                 logging.info(f"Command '{plugin_name}' registered.")
@@ -86,12 +106,13 @@ class App:
         try:
             while True:
                 cmd_input = input(">>> ").strip()
-                if cmd_input.lower() == 'exit':
-                    logging.info("Exiting application.")
+                if cmd_input.lower() == "exit":
+                    logging.info("Exiting application...")
                     sys.exit(0)
 
                 result = self.command_handler.execute_command(cmd_input)
                 print(result)
+
         except KeyboardInterrupt:
             logging.info("Application interrupted. Exiting…")
             sys.exit(0)
