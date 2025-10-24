@@ -5,7 +5,6 @@ import sys
 import logging
 import logging.config
 from abc import ABC, abstractmethod
-from dotenv import load_dotenv
 from calculator.calculation_history import CalculationHistory
 
 # ✅ Base Command class for static operations
