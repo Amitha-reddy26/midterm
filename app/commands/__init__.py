@@ -6,14 +6,14 @@ import logging
 import logging.config
 from abc import ABC, abstractmethod
 
+
 class Command(ABC):
-    """Abstract base class for all command types."""
     @abstractmethod
-    def execute(self):
+    def execute(self, a, b):
         pass
 
+
 class CommandHandler:
-    """Handles the registration and execution of commands."""
     def __init__(self):
         self.commands = {}
 
@@ -22,14 +22,21 @@ class CommandHandler:
 
     def execute_command(self, operation):
         command = self.commands.get(operation)
-        if command is not None:
-            return command.execute()
-        error_message = f"No such command: {operation}"  
-        logging.error(error_message)
-        return error_message  
-    
+        if not command:
+            error_message = f"No such command: {operation}"
+            logging.error(error_message)
+            return error_message
+
+        try:
+            a = float(input("Enter first number: "))
+            b = float(input("Enter second number: "))
+            return command.execute(a, b)
+        except Exception as e:
+            logging.error(f"Execution error: {e}")
+            return f"Error executing command: {e}"
+
+
 class App:
-    """Main application class to manage command execution and logging."""
     def __init__(self):
         os.makedirs('logs', exist_ok=True)
         self.configure_logging()
@@ -42,7 +49,8 @@ class App:
         if os.path.exists(logging_conf_path):
             logging.config.fileConfig(logging_conf_path, disable_existing_loggers=False)
         else:
-            logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+            logging.basicConfig(level=logging.INFO,
+                                format='%(asctime)s - %(levelname)s - %(message)s')
         logging.info("Logging configured.")
 
     def load_environment_variables(self):
@@ -56,6 +64,7 @@ class App:
         if not os.path.exists(plugins_path):
             logging.warning(f"Plugins directory '{plugins_path}' not found.")
             return
+
         for _, plugin_name, is_pkg in pkgutil.iter_modules([plugins_path]):
             if is_pkg:
                 try:
@@ -69,7 +78,7 @@ class App:
             item = getattr(plugin_module, item_name)
             if isinstance(item, type) and issubclass(item, Command) and item is not Command:
                 self.command_handler.register_command(plugin_name, item())
-                logging.info(f"Command '{plugin_name}' from plugin '{plugin_name}' registered.")
+                logging.info(f"Command '{plugin_name}' registered.")
 
     def start(self):
         self.load_plugins()
@@ -78,15 +87,17 @@ class App:
             while True:
                 cmd_input = input(">>> ").strip()
                 if cmd_input.lower() == 'exit':
-                    logging.info("Application exit.")
+                    logging.info("Exiting application.")
                     sys.exit(0)
+
                 result = self.command_handler.execute_command(cmd_input)
-                print(result)  # Print the result of the command execution
+                print(result)
         except KeyboardInterrupt:
-            logging.info("Application interrupted and exiting gracefully.")
-            ys.exit(0)
+            logging.info("Application interrupted. Exiting…")
+            sys.exit(0)
         finally:
             logging.info("Application shutdown.")
+
 
 if __name__ == "__main__":
     app = App()
